@@ -5,64 +5,85 @@ const cors = require('cors');
 app.use(express.json());
 app.use(cors());
 
-let usuarios = [];
+let floricultura = [];
 
-app.post('/usuarios', (req, res) => {
-    const { nome, email } = req.body;
-    
-    if (!nome || !email) {
-        return res.status(400).json({ erro: 'Nome e email são obrigatórios' });
+// Endpoint para adicionar uma nova flor
+app.post('/floricultura', (req, res) => {
+    const { nome, preco, categoria, cor, tamanho, quantidadeestoque, imagem } = req.body;
+
+    if (!nome || !preco || !categoria || !cor || !tamanho || !quantidadeestoque || !imagem) {
+        return res.status(400).json({ erro: 'Todos os campos são obrigatórios' });
     }
 
-    const novoUsuario = { id: usuarios.length + 1, nome, email };
-    usuarios.push(novoUsuario);
-    
-    res.status(201).json(novoUsuario);
+    const novaFlor = {
+        id: floricultura.length + 1,
+        nome,
+        preco,
+        categoria,
+        cor,
+        tamanho,
+        quantidadeestoque,
+        imagem
+    };
+
+    floricultura.push(novaFlor);
+    res.status(201).json(novaFlor);
 });
 
-app.get('/usuarios', (req, res) => {
-    res.status(200).json(usuarios);
+// Endpoint para listar todas as flores
+app.get('/floricultura', (req, res) => {
+    res.status(200).json(floricultura);
 });
 
-app.get('/usuarios/:id', (req, res) => {
+// Endpoint para buscar uma flor pelo ID
+app.get('/floricultura/:id', (req, res) => {
     const { id } = req.params;
-    const usuario = usuarios.find(u => u.id === parseInt(id));
-    
-    if (!usuario) {
-        return res.status(404).json({ erro: 'Usuário não encontrado' });
+    const flor = floricultura.find(f => f.id === parseInt(id));
+
+    if (!flor) {
+        return res.status(404).json({ erro: 'Flor não encontrada' });
     }
-    
-    res.status(200).json(usuario);
+
+    res.status(200).json(flor);
 });
 
-app.put('/usuarios/:id', (req, res) => {
+// Endpoint para atualizar informações de uma flor
+app.put('/floricultura/:id', (req, res) => {
     const { id } = req.params;
-    const { nome, email } = req.body;
-    
-    const usuario = usuarios.find(u => u.id === parseInt(id));
-    
-    if (!usuario) {
-        return res.status(404).json({ erro: 'Usuário não encontrado' });
+    const { nome, preco, categoria, cor, tamanho, quantidadeestoque, imagem } = req.body;
+
+    const flor = floricultura.find(f => f.id === parseInt(id));
+
+    if (!flor) {
+        return res.status(404).json({ erro: 'Flor não encontrada' });
     }
-    
-    usuario.nome = nome || usuario.nome;
-    usuario.email = email || usuario.email;
-    
-    res.status(200).json(usuario);
+
+    // Atualiza apenas os campos fornecidos
+    if (nome) flor.nome = nome;
+    if (preco) flor.preco = preco;
+    if (categoria) flor.categoria = categoria;
+    if (cor) flor.cor = cor;
+    if (tamanho) flor.tamanho = tamanho;
+    if (quantidadeestoque) flor.quantidadeestoque = quantidadeestoque;
+    if (imagem) flor.imagem = imagem;
+
+    res.status(200).json(flor);
 });
 
-app.delete('/usuarios/:id', (req, res) => {
+// Endpoint para deletar uma flor
+app.delete('/floricultura/:id', (req, res) => {
     const { id } = req.params;
-    const index = usuarios.findIndex(u => u.id === parseInt(id));
-    
+    const index = floricultura.findIndex(f => f.id === parseInt(id));
+
     if (index === -1) {
-        return res.status(404).json({ erro: 'Usuário não encontrado' });
+        return res.status(404).json({ erro: 'Flor não encontrada' });
     }
-    
-    usuarios.splice(index, 1);
+
+    floricultura.splice(index, 1);
     res.status(204).send();
 });
 
+// Inicializa o servidor
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');
 });
