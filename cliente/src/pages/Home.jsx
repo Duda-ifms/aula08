@@ -1,37 +1,33 @@
+import React from 'react' 
 import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Typography,
-} from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from "@mui/material";
 
-const exportarPDF = () => {
-  const doc = new jsPDF();
-  const tabelaDados = produtos.map((produto) => [
-    produto.nome,
-    produto.preco,
-    produto.cor,
-    produto.tamanho,
-    produto.quantidadeestoque,
-    produto.imagem,
-  ]);
+const exportarPDF = (produtos) => {
+  try {
+    const doc = new jsPDF();
+    const tabelaDados = produtos.map((produto) => [
+      produto.nome,
+      produto.preco,
+      produto.cor,
+      produto.tamanho,
+      produto.quantidadeestoque,
+      produto.imagem,
+    ]);
 
-  doc.text("Lista de Flores", 10, 10);
-  doc.autoTable({
-    head: [["Nome", "Preço", "Cor", "Tamanho", "Quantidade Estoque", "Imagem"]],
-    body: tabelaDados,
-  });
+    doc.text("Lista de Flores", 10, 10);
+    doc.autoTable({
+      head: [["Nome", "Preço", "Cor", "Tamanho", "Quantidade Estoque", "Imagem"]],
+      body: tabelaDados,
+    });
 
-  doc.save("floricultura.pdf");
-}
+    doc.save("floricultura.pdf");
+  } catch (error) {
+    alert("Erro ao gerar o PDF!");
+    console.error("Erro ao gerar o PDF:", error);
+  }
+};
 
 export default function Home() {
   const [produtos, setProdutos] = useState([]);
@@ -42,8 +38,9 @@ export default function Home() {
         const resposta = await fetch("http://localhost:3000/floricultura");
         const dados = await resposta.json();
         setProdutos(dados);
-      } catch {
+      } catch (error) {
         alert("Erro ao buscar produtos!");
+        console.error("Erro ao buscar produtos:", error);
       }
     };
     buscarProdutos();
@@ -55,8 +52,9 @@ export default function Home() {
         method: "DELETE",
       });
       setProdutos(produtos.filter((produto) => produto.id !== id));
-    } catch {
+    } catch (error) {
       alert("Erro ao apagar o produto!");
+      console.error("Erro ao apagar o produto:", error);
     }
   };
 
@@ -75,6 +73,7 @@ export default function Home() {
               <TableCell><strong>Tamanho</strong></TableCell>
               <TableCell><strong>Quantidade Estoque</strong></TableCell>
               <TableCell><strong>Imagem</strong></TableCell>
+              <TableCell><strong>Ações</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -86,15 +85,17 @@ export default function Home() {
                 <TableCell>{produto.tamanho}</TableCell>
                 <TableCell>{produto.quantidadeestoque}</TableCell>
                 <TableCell>
-                  <img
-                    src={produto.imagem}
-                    alt={`Imagem de ${produto.nome}`}
-                    style={{
-                      width: "100px",
-                      height: "auto",
-                      borderRadius: "5px",
-                    }}
-                  />
+                  {produto.imagem && (
+                    <img
+                      src={produto.imagem}
+                      alt={`Imagem de ${produto.nome}`}
+                      style={{
+                        width: "100px",
+                        height: "auto",
+                        borderRadius: "5px",
+                      }}
+                    />
+                  )}
                 </TableCell>
                 <TableCell>
                   <Button
@@ -110,7 +111,14 @@ export default function Home() {
           </TableBody>
         </Table>
       </TableContainer>
-      <Button variant="contained" color="primary" onClick={exportarPDF}>Exportar PDF</Button>
+      <Button
+        variant="contained"
+        color="primary"
+        style={{ marginTop: "20px" }}
+        onClick={() => exportarPDF(produtos)}
+      >
+        Exportar PDF
+      </Button>
     </div>
   );
 }
