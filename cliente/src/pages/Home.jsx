@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import jsPDF from "jspdf";
+import 'jspdf-autotable';
 import {
   Table,
   TableBody,
@@ -11,10 +13,29 @@ import {
   Typography,
 } from "@mui/material";
 
+const exportarPDF = () => {
+  const doc = new jsPDF();
+  const tabelaDados = produtos.map((produto) => [
+    produto.nome,
+    produto.preco,
+    produto.cor,
+    produto.tamanho,
+    produto.quantidadeestoque,
+    produto.imagem,
+  ]);
+
+  doc.text("Lista de Flores", 10, 10);
+  doc.autoTable({
+    head: [["Nome", "Preço", "Cor", "Tamanho", "Quantidade Estoque", "Imagem"]],
+    body: tabelaDados,
+  });
+
+  doc.save("floricultura.pdf");
+}
+
 export default function Home() {
   const [produtos, setProdutos] = useState([]);
 
-  // Buscar os produtos ao carregar o componente
   useEffect(() => {
     const buscarProdutos = async () => {
       try {
@@ -28,13 +49,12 @@ export default function Home() {
     buscarProdutos();
   }, []);
 
-  // Função para apagar um produto
   const apagarItem = async (id) => {
     try {
       await fetch("http://localhost:3000/floricultura/" + id, {
         method: "DELETE",
       });
-      setProdutos(produtos.filter((produto) => produto.id !== id)); // Atualiza a lista localmente
+      setProdutos(produtos.filter((produto) => produto.id !== id));
     } catch {
       alert("Erro ao apagar o produto!");
     }
@@ -55,7 +75,6 @@ export default function Home() {
               <TableCell><strong>Tamanho</strong></TableCell>
               <TableCell><strong>Quantidade Estoque</strong></TableCell>
               <TableCell><strong>Imagem</strong></TableCell>
-              <TableCell><strong>Ações</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -91,6 +110,7 @@ export default function Home() {
           </TableBody>
         </Table>
       </TableContainer>
+      <Button variant="contained" color="primary" onClick={exportarPDF}>Exportar PDF</Button>
     </div>
   );
 }
